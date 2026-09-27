@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="kFBnT6qXOlEL0aa6UctPvi">
+<head data-page-node-id="4kEGp04vnH5pZyZsw9oLHC">
+<meta charset="UTF-8" data-page-node-id="CwYp3vpYoJOZ2kWGQ94PEs" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" data-page-node-id="EOvvrygYErEm6n3LGplHlo" />
+<title>奶蛙钢琴块 · 点蛙听音</title>
+<style>
+  :root{
+    --bg1:#eaf6ff; --bg2:#ffeef6; --card:#fffdf5;
+    --green:#7cb342; --green-d:#5a9e2f; --text:#4d4636; --shadow:rgba(124,179,66,.3);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    background:linear-gradient(160deg,var(--bg1),var(--bg2));color:var(--text);
+    display:flex;align-items:center;justify-content:center;min-height:100vh;padding:12px;}
+  .app{width:100%;max-width:430px;background:var(--card);border-radius:28px;
+    box-shadow:0 18px 50px var(--shadow);padding:14px;position:relative;overflow:hidden;}
+  .title{font-size:19px;font-weight:800;text-align:center;margin-bottom:8px;}
+  .title small{display:block;font-size:11px;font-weight:600;color:var(--green-d);opacity:.85;}
+  .hud{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px;}
+  .hud .box{background:#f3f9ff;border:2px solid #d9ecff;border-radius:14px;padding:6px 4px;text-align:center;}
+  .hud .k{font-size:10px;font-weight:700;opacity:.7;}
+  .hud .v{font-size:16px;font-weight:800;color:var(--green-d);}
+  canvas{display:block;width:100%;max-width:400px;margin:0 auto;border-radius:18px;
+    background:#fffef7;touch-action:none;cursor:pointer;}
+  .hint{text-align:center;font-size:11px;opacity:.55;margin-top:8px;}
+  .overlay{position:absolute;inset:0;background:rgba(253,250,235,.97);display:none;
+    flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    padding:24px;border-radius:28px;z-index:10;}
+  .overlay.show{display:flex;}
+  .overlay h2{margin:0 0 6px;font-size:26px;color:var(--green-d);}
+  .overlay p{margin:4px 0;font-size:14px;line-height:1.5;}
+  .big{font-size:34px;font-weight:800;color:#ffa726;margin:6px 0 10px;}
+  .btn{background:linear-gradient(135deg,#8bc34a,#689f38);color:#fff;border:none;
+    padding:12px 28px;border-radius:20px;font-size:15px;font-weight:800;cursor:pointer;
+    box-shadow:0 6px 0 #577f2c;margin-top:10px;}
+  .btn:active{transform:translateY(3px);box-shadow:0 3px 0 #577f2c;}
+</style>
+</head>
+<body data-page-node-id="Tk2WUmp2OXOciNOHWYV9Cg">
+<div class="app" data-page-node-id="grV4rxOoJAMuecGrzVSjuw">
+  <div class="title" data-page-node-id="VBWBnUYLEAzT9qKjQTAzFx">🐸 奶蛙钢琴块 <small data-page-node-id="HiaJ3ZJWhEJnQB7o0KBbKs">点中奶蛙就会响 · 别点空地也别漏掉 🎹</small></div>
+  <div class="hud" data-page-node-id="vJso5x5OH6XfCdZvwtCTYv">
+    <div class="box" data-page-node-id="jGZYMj63sYKDBNHdU6ZKDY"><div class="k" data-page-node-id="1ugzHvsGC3UzQ2PTjsOOXA">🎵 得分</div><div class="v" id="hScore" data-page-node-id="PlDjWBVzJAXs19Gg660yJa">0</div></div>
+    <div class="box" data-page-node-id="R2nNqPR98AMZ2qA9zALNnb"><div class="k" data-page-node-id="R0IZPqZ4wASnuoK3R42do5">🔥 连击</div><div class="v" id="hCombo" data-page-node-id="TcKwz9vtTgqj8Oy0R2V4Su">0</div></div>
+    <div class="box" data-page-node-id="RZHVrgNMtf47CXx5OsY8mn"><div class="k" data-page-node-id="VLZT3xXpbGFpbcbsCwxrrz">⚡ 速度</div><div class="v" id="hSpeed" data-page-node-id="cxb1Adn7rhPsqCco9AEgox">1.0x</div></div>
+  </div>
+
+  <canvas id="game" width="400" height="600" data-page-node-id="Ecu3bvAixQ7US0zNW2zJ28"></canvas>
+  <div class="hint" data-page-node-id="cRnAjhE7NmrkSdgysj9o7E">点屏幕对应列 / 键盘 1 2 3 4 · 从最下面的奶蛙开始点，漏掉或点错就结束</div>
+
+  <div class="overlay show" id="menu" data-page-node-id="Q3iRCHBiyMfpaDRDzdFHgi">
+    <h2 data-page-node-id="NxSMgwtiLcytfulGhYH3T0">🐸 奶蛙钢琴块</h2>
+    <p data-page-node-id="14vh2kTuHf1IUvgwOOUU0d">一列列小奶蛙往下掉，<br data-page-node-id="GJWYsyCcHUlpzcc7LIco2n">从最下面的那只开始，点它就会「呱」地响一声～</p>
+    <p style="opacity:.7" data-page-node-id="O6iDQDYEivsLd6xIgsJxMk">点错空地、或让奶蛙溜到底，游戏就结束。<br data-page-node-id="nBj1gjOtRbuGb5y7smUFC5">越快连击，奶蛙掉得越快，旋律越动听！</p>
+    <button class="btn" id="btnStart" data-page-node-id="m9bHfGOTfKoHcCho8NW4HZ">开始弹蛙</button>
+  </div>
+
+  <div class="overlay" id="over" data-page-node-id="MqHzGi2MjAIxWJD6bBt6pn">
+    <h2 data-page-node-id="13NU97xi7dbmFCvIImYqw4">呱…弹断啦</h2>
+    <p id="overMsg" data-page-node-id="8ZRiQm5RFBbTNXBzh8HjiW">手滑点到空地了！</p>
+    <div class="big" data-page-node-id="T4Yry0rQHyILBHCXWNmU2c">得分 <span id="finalScore" data-page-node-id="z1zqNAQUQ0Nnd320eNv0GG">0</span></div>
+    <button class="btn" id="btnRestart" data-page-node-id="ARn59dWTsXcQ8gXFAaqfZF">再弹一遍</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const W = 400, H = 600, LANES = 4, LW = W/LANES, RH = 140;
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W*dpr; canvas.height = H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  // ---------- 音频 ----------
+  let actx = null, master = null;
+  function initAudio(){
+    if(actx) return;
+    try{
+      actx = new (window.AudioContext||window.webkitAudioContext)();
+      master = actx.createGain(); master.gain.value = 0.5; master.connect(actx.destination);
+    }catch(e){ actx = null; }
+  }
+  function resumeAudio(){ if(actx && actx.state === "suspended") actx.resume(); }
+  // C 大调五声音阶，跨两个八度，连点像一段旋律
+  const SCALE = [261.63,293.66,329.63,392.00,440.00,523.25,587.33,659.25,783.99,880.00];
+  let noteIdx = 0;
+  function playNote(){
+    if(!actx) return;
+    const f = SCALE[noteIdx % SCALE.length]; noteIdx++;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "triangle"; o.frequency.value = f;
+    const t = actx.currentTime;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.6, t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.35);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t+0.4);
+  }
+  function playFail(){
+    if(!actx) return;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "sawtooth"; o.frequency.value = 160;
+    const t = actx.currentTime;
+    g.gain.setValueAtTime(0.4, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.5);
+    o.frequency.exponentialRampToValueAtTime(60, t+0.5);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t+0.55);
+  }
+
+  // ---------- 状态 ----------
+  let state = "menu";
+  let rows = [], score = 0, combo = 0, best = 0, speed = 170, spawnTopY = 0;
+
+  function randLane(){ return Math.floor(Math.random()*LANES); }
+
+  function spawnInitial(){
+    rows = []; noteIdx = 0;
+    // 让最下面一行靠近底部，上面依次排开
+    const startY = H - RH;
+    for(let r=0; r<6; r++){
+      rows.push({ lane: randLane(), y: startY - r*RH, tapped:false, pop:0 });
+    }
+    spawnTopY = startY - 6*RH;
+  }
+  function ensureRows(){
+    // 顶部补行，保持缓冲区
+    while(spawnTopY > -RH){
+      spawnTopY -= RH;
+      rows.push({ lane: randLane(), y: spawnTopY, tapped:false, pop:0 });
+    }
+  }
+
+  function startGame(){
+    initAudio(); resumeAudio();
+    score = 0; combo = 0; speed = 170;
+    spawnInitial(); ensureRows();
+    state = "playing";
+    hideAll(); updateHUD();
+  }
+
+  function activeTarget(){
+    let best = null;
+    for(const row of rows){ if(!row.tapped && (!best || row.y > best.y)) best = row; }
+    return best;
+  }
+
+  function tap(lane){
+    if(state !== "playing") return;
+    resumeAudio();
+    const t = activeTarget();
+    if(!t){ return; }
+    if(t.lane === lane){
+      t.tapped = true; t.pop = 0.0001;
+      score++; combo++;
+      if(combo > best) best = combo;
+      playNote();
+      speed = Math.min(170 + score*3, 540);
+    } else {
+      // 点错列（点到空地/别的蛙）
+      playFail();
+      gameOver("手滑点到空地啦！");
+    }
+    updateHUD();
+  }
+
+  function gameOver(msg){
+    state = "over";
+    document.getElementById("overMsg").textContent = msg;
+    document.getElementById("finalScore").textContent = score;
+    show("over");
+  }
+
+  function update(dt){
+    for(const row of rows){
+      row.y += speed * dt;
+      if(row.tapped) row.pop = Math.min(1, row.pop + dt*4);
+    }
+    // 漏掉：最下面未点的蛙溜出底部
+    const t = activeTarget();
+    if(t && t.y > H + 4){ playFail(); gameOver("有奶蛙溜到底啦！"); return; }
+    // 清理：已点且动画结束、或已远超出底部
+    rows = rows.filter(r => !(r.tapped && r.pop >= 1) && !(r.y > H + RH && r.tapped));
+    ensureRows();
+  }
+
+  // ---------- 绘制 ----------
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+  function drawFrogTile(cx, cy, scale, alpha, tapped){
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    const s = 30*scale;
+    // 身体
+    ctx.fillStyle = tapped ? "#bfe39a" : "#FFC93C";
+    ctx.beginPath(); ctx.ellipse(cx, cy, s, s*0.9, 0, 0, Math.PI*2); ctx.fill();
+    // 高光
+    ctx.fillStyle = "rgba(255,255,255,.35)";
+    ctx.beginPath(); ctx.ellipse(cx-s*0.35, cy-s*0.3, s*0.4, s*0.32, 0, 0, Math.PI*2); ctx.fill();
+    // 眼睛
+    for(const ex of [cx-s*0.42, cx+s*0.42]){
+      ctx.fillStyle = "#8CC152";
+      ctx.beginPath(); ctx.ellipse(ex, cy-s*0.55, s*0.34, s*0.38, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.ellipse(ex, cy-s*0.55, s*0.24, s*0.27, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#26221f";
+      ctx.beginPath(); ctx.ellipse(ex, cy-s*0.52, s*0.13, s*0.16, 0, 0, Math.PI*2); ctx.fill();
+    }
+    // 嘴
+    ctx.strokeStyle = "#7a4a1f"; ctx.lineWidth = s*0.12; ctx.lineCap="round";
+    ctx.beginPath(); ctx.arc(cx, cy+s*0.1, s*0.32, 0.15*Math.PI, 0.85*Math.PI); ctx.stroke();
+    if(tapped){
+      ctx.globalAlpha = alpha*0.9;
+      ctx.strokeStyle = "#3e7d1e"; ctx.lineWidth = s*0.18; ctx.lineCap="round";
+      ctx.beginPath();
+      ctx.moveTo(cx-s*0.28, cy+s*0.15);
+      ctx.lineTo(cx-s*0.05, cy+s*0.38);
+      ctx.lineTo(cx+s*0.35, cy-s*0.22);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // 车道背景
+    for(let i=0;i<LANES;i++){
+      ctx.fillStyle = (i%2===0) ? "#fffdf4" : "#fbf4e6";
+      ctx.fillRect(i*LW, 0, LW, H);
+    }
+    ctx.strokeStyle = "rgba(150,130,90,.12)"; ctx.lineWidth = 2;
+    for(let i=1;i<LANES;i++){ ctx.beginPath(); ctx.moveTo(i*LW,0); ctx.lineTo(i*LW,H); ctx.stroke(); }
+    // 底部提示线
+    ctx.strokeStyle = "rgba(124,179,66,.35)"; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(0,H-2); ctx.lineTo(W,H-2); ctx.stroke();
+    // 奶蛙块
+    for(const row of rows){
+      const cx = row.lane*LW + LW/2;
+      const cy = row.y + RH/2;
+      const sc = (RH-24)/60;
+      if(row.tapped){ drawFrogTile(cx, cy, sc, 1-row.pop, true); }
+      else { drawFrogTile(cx, cy, sc, 1, false); }
+    }
+  }
+
+  function updateHUD(){
+    document.getElementById("hScore").textContent = score;
+    document.getElementById("hCombo").textContent = combo;
+    document.getElementById("hSpeed").textContent = (speed/170).toFixed(1)+"x";
+  }
+  function show(id){ ["menu","over"].forEach(o=>document.getElementById(o).classList.toggle("show", o===id)); }
+  function hideAll(){ ["menu","over"].forEach(o=>document.getElementById(o).classList.remove("show")); }
+
+  // ---------- 输入 ----------
+  function laneFromEvent(e){
+    const rect = canvas.getBoundingClientRect();
+    const cx = (e.clientX - rect.left) / rect.width * W;
+    return Math.max(0, Math.min(LANES-1, Math.floor(cx / LW)));
+  }
+  canvas.addEventListener("pointerdown", e=>{ e.preventDefault(); tap(laneFromEvent(e)); });
+  window.addEventListener("keydown", e=>{
+    const map = {"1":0,"2":1,"3":2,"4":3,"a":0,"s":1,"k":2,"l":3};
+    if(e.key in map){ e.preventDefault(); tap(map[e.key]); }
+  });
+  document.getElementById("btnStart").addEventListener("click", startGame);
+  document.getElementById("btnRestart").addEventListener("click", startGame);
+
+  // ---------- 主循环 ----------
+  let last = 0;
+  function frame(t){
+    const dt = last ? Math.min((t-last)/1000, 0.05) : 0;
+    last = t;
+    if(state === "playing"){ update(dt); updateHUD(); }
+    draw();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  draw();
+})();
+</script>
+</body>
+</html>
